@@ -1,0 +1,75 @@
+body {
+  margin: 0;
+  font-family: 'Arial', sans-serif;
+  background: linear-gradient(to bottom, #f0f4f8, #d9e2ec);
+  color: #333;
+}
+
+.App {
+  text-align: center;
+  padding: 20px;
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-header {
+  background: linear-gradient(to right, #4CAF50, #81C784);
+  color: white;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: 2.5em;
+}
+
+.app-header p {
+  margin: 10px 0 0;
+  font-size: 1.2em;
+}
+
+.app-main {
+  flex: 1;
+  padding: 20px;
+  text-align: center;
+}
+
+.app-main h2 {
+  font-size: 2em;
+  margin-bottom: 20px;
+}
+
+.puzzle-list {
+  list-style: none;
+  padding: 0;
+  display: inline-block;
+}
+
+.puzzle-item {
+  background-color: #ffffff;
+  margin: 10px;
+  padding: 15px 20px;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
+}
+
+.puzzle-item:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  background-color: #e0f7fa;
+}
+
+.app-footer {
+  background: linear-gradient(to right, #333, #555);
+  color: white;
+  text-align: center;
+  padding: 10px;
+}

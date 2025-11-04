@@ -1,0 +1,19 @@
+.puzzle-list {
+  margin: 20px auto;
+  max-width: 300px;
+  text-align: left;
+}
+
+.puzzle-list h2 {
+  color: #333;
+}
+
+.puzzle-list ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.puzzle-list li {
+  padding: 5px 0;
+  border-bottom: 1px solid #ccc;
+}

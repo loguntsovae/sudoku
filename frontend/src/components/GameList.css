@@ -1,0 +1,34 @@
+.game-list {
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
+
+.game-list h1 {
+  font-size: 24px;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.game-list ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.game-list li {
+  margin: 10px 0;
+  font-size: 18px;
+}
+
+.game-list a {
+  text-decoration: none;
+  color: #007BFF;
+}
+
+.game-list a:hover {
+  text-decoration: underline;
+}
+
+.game-list p {
+  font-size: 16px;
+  color: #666;
+}

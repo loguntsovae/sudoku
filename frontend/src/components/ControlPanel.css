@@ -1,0 +1,17 @@
+.control-panel {
+  margin: 20px auto;
+}
+
+.control-panel button {
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.control-panel button:hover {
+  background-color: #0056b3;
+}
