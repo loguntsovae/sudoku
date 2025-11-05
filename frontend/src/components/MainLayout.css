@@ -1,0 +1,26 @@
+.main-layout {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  gap: 20px;
+  padding: 20px;
+  background-color: #f9f9f9;
+}
+
+.left-column, .center-column, .right-column {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 15px;
+}
+
+.left-column h2, .center-column h2, .right-column h2 {
+  font-family: 'Poppins', sans-serif;
+  color: #333;
+}
+
+/* Add hover animations for puzzle cards */
+.puzzle-card:hover {
+  transform: scale(1.05);
+  filter: blur(1px);
+  transition: all 0.3s ease;
+}

@@ -8,4 +8,10 @@ dependencies = [
     "pydantic>=2.12.3",
     "uvicorn[standard]>=0.38.0",
     "random-word",
+    "pyjwt>=2.6.0",
+    "sqlalchemy>=1.4",
+    "aiosqlite>=0.17.0",
+    "greenlet",
+    "bcrypt==4.1.2",
+    "passlib==1.7.4",
 ]

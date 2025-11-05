@@ -1,10 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers.puzzles import router as puzzles_router
-from routers.games import router as games_router
-from routers.websocket_routes import websocket_game_endpoint
+from routers import puzzles_router, games_router, websocket_game_endpoint, auth
 from services.puzzle_generator import ensure_minimum_puzzles
-from services.sudoku_generator import SudokuGenerator
+from db import create_tables
+
 
 app = FastAPI(
     title="Sudoku API",
@@ -18,7 +17,7 @@ app = FastAPI(
         "name": "MIT",
         "url": "https://opensource.org/licenses/MIT",
     },
-    on_startup=[ensure_minimum_puzzles]
+    on_startup=[ensure_minimum_puzzles, create_tables]
 )
 
 # Enable CORS for all origins
@@ -33,6 +32,7 @@ app.add_middleware(
 # Include routers
 app.include_router(puzzles_router, prefix="", tags=["Puzzles"])
 app.include_router(games_router, prefix="", tags=["Games"])
+app.include_router(auth.router, prefix="/auth", tags=["auth"])
 
 # WebSocket endpoint
 app.add_api_websocket_route("/ws/games/{game_id}", websocket_game_endpoint)

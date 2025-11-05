@@ -1,32 +1,43 @@
-import sqlite3
+from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.orm import relationship, sessionmaker, declarative_base
+from contextlib import asynccontextmanager
+
+import asyncio
 
 # Initialize SQLite database
-conn = sqlite3.connect("sudoku.db", check_same_thread=False)
-cursor = conn.cursor()
+DATABASE_URL = "sqlite+aiosqlite:///sudoku.db"
 
-# Create puzzles table if it does not exist
-def create_tables():
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS puzzles (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL UNIQUE,
-        puzzle TEXT NOT NULL,
-        solution TEXT
-    )
-    """)
+# Create async engine
+engine = create_async_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+Base = declarative_base()
 
-    # Create game table if it does not exist
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS game (
-        id TEXT PRIMARY KEY,
-        puzzle_id INTEGER NOT NULL,
-        current_state TEXT NOT NULL,
-        initial_state TEXT,
-        FOREIGN KEY (puzzle_id) REFERENCES puzzles (id)
-    )
-    """)
+class User(Base):
+    __tablename__ = 'users'
 
-    conn.commit()
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String, unique=True, index=True, nullable=False)
+    password = Column(String, nullable=False)
 
-# Call the function to ensure tables are created
-create_tables()
+class Puzzle(Base):
+    __tablename__ = 'puzzles'
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, unique=True, nullable=False)
+    puzzle = Column(String, nullable=False)
+    solution = Column(String)
+
+class Game(Base):
+    __tablename__ = 'game'
+
+    id = Column(String, primary_key=True, index=True)
+    puzzle_id = Column(Integer, ForeignKey('puzzles.id'), nullable=False)
+    current_state = Column(String, nullable=False)
+    initial_state = Column(String)
+
+    puzzle = relationship("Puzzle")
+
+async def create_tables():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)

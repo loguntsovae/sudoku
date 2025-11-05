@@ -1,46 +1,41 @@
-from fastapi import WebSocket
+from fastapi import WebSocket, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 from typing import Dict
 import asyncio
-from db import cursor, conn
+from db import Game, Puzzle
+from dependencies import get_db
 
 # Dictionary to keep track of active WebSocket connections
 active_connections: Dict[int, WebSocket] = {}
 
-def fetch_game_data(game_id):
-    """Fetch the current state, initial state, and solution for a game."""
-    cursor.execute(
-        """
-        SELECT game.current_state, game.initial_state, puzzles.solution
-        FROM game
-        JOIN puzzles ON game.puzzle_id = puzzles.id
-        WHERE game.id = ?
-        """,
-        (game_id,)
+async def fetch_game_data(game_id, db: AsyncSession):
+    result = await db.execute(
+        select(Game.current_state, Game.initial_state, Puzzle.solution)
+        .join(Puzzle, Game.puzzle_id == Puzzle.id)
+        .where(Game.id == game_id)
     )
-    return cursor.fetchone()
+    return result.one_or_none()
 
-def update_game_state(game_id, updated_state):
-    """Update the current state of the game in the database."""
-    cursor.execute(
-        "UPDATE game SET current_state = ? WHERE id = ?",
-        (updated_state, game_id)
+async def update_game_state(game_id, updated_state, db: AsyncSession):
+    result = await db.execute(
+        select(Game).where(Game.id == game_id)
     )
-    conn.commit()
+    game = result.scalar()
+    if game:
+        game.current_state = updated_state
+        await db.commit()
 
-async def handle_auto_solver(websocket, game_id, auto_solver_tasks):
+async def handle_auto_solver(websocket, game_id, auto_solver_tasks, db: AsyncSession):
     """Run the auto-solver to fill in missing values in the puzzle."""
     try:
         while True:
-            cursor.execute(
-                """
-                SELECT game.current_state, puzzles.solution
-                FROM game
-                JOIN puzzles ON game.puzzle_id = puzzles.id
-                WHERE game.id = ?
-                """,
-                (game_id,)
+            result = await db.execute(
+                select(Game.current_state, Puzzle.solution)
+                .join(Puzzle, Game.puzzle_id == Puzzle.id)
+                .where(Game.id == game_id)
             )
-            game = cursor.fetchone()
+            game = result.one_or_none()
             if not game:
                 await websocket.send_text("Game not found")
                 break
@@ -57,7 +52,7 @@ async def handle_auto_solver(websocket, game_id, auto_solver_tasks):
             current_state[empty_index] = correct_value
             updated_state = "".join(current_state)
 
-            update_game_state(game_id, updated_state)
+            await update_game_state(game_id, updated_state, db)
 
             await websocket.send_json({"index": empty_index, "value": correct_value})
             await asyncio.sleep(3)
@@ -66,13 +61,13 @@ async def handle_auto_solver(websocket, game_id, auto_solver_tasks):
     except Exception as e:
         print(f"Auto solver error: {e}")
 
-async def process_websocket_message(websocket, game_id, data, auto_solver_tasks):
+async def process_websocket_message(websocket, game_id, data, auto_solver_tasks, db: AsyncSession):
     """Process incoming WebSocket messages."""
     if "index" in data and "value" in data:
         index = data["index"]
         value = data["value"]
 
-        game = fetch_game_data(game_id)
+        game = await fetch_game_data(game_id, db)
         if not game:
             await websocket.send_text("Game not found")
             return
@@ -92,7 +87,7 @@ async def process_websocket_message(websocket, game_id, data, auto_solver_tasks)
         current_state[index] = value if value else '0'
         updated_state = "".join(current_state)
 
-        update_game_state(game_id, updated_state)
+        await update_game_state(game_id, updated_state, db)
 
         if updated_state == solution:
             await websocket.send_json({"message": "all is done"})
@@ -101,7 +96,7 @@ async def process_websocket_message(websocket, game_id, data, auto_solver_tasks)
 
     elif data.get("autoSolver") == "ON":
         if game_id not in auto_solver_tasks or auto_solver_tasks[game_id].done():
-            task = asyncio.create_task(handle_auto_solver(websocket, game_id, auto_solver_tasks))
+            task = asyncio.create_task(handle_auto_solver(websocket, game_id, auto_solver_tasks, db))
             auto_solver_tasks[game_id] = task
             await websocket.send_text("Auto solver started")
 
@@ -111,7 +106,7 @@ async def process_websocket_message(websocket, game_id, data, auto_solver_tasks)
             task.cancel()
         await websocket.send_text("Auto solver stopped")
 
-async def websocket_game_endpoint(websocket: WebSocket, game_id: str):
+async def websocket_game_endpoint(websocket: WebSocket, game_id: str, db: AsyncSession = Depends(get_db)):
     """WebSocket endpoint for managing game interactions."""
     await websocket.accept()
     active_connections[game_id] = websocket
@@ -120,7 +115,7 @@ async def websocket_game_endpoint(websocket: WebSocket, game_id: str):
     try:
         while True:
             data = await websocket.receive_json()
-            await process_websocket_message(websocket, game_id, data, auto_solver_tasks)
+            await process_websocket_message(websocket, game_id, data, auto_solver_tasks, db)
     except Exception as e:
         print(f"WebSocket error: {e}")
     finally:

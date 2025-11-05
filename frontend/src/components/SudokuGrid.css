@@ -1,14 +1,25 @@
+.sudoku-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+}
+
 .sudoku-grid {
   display: grid;
   grid-template-columns: repeat(9, 1fr);
-  grid-template-rows: repeat(9, 1fr);
+  gap: 2px;
+  border: 2px solid #333;
+  padding: 10px;
   width: 450px;
   height: 450px;
   margin: 30px auto;
   background-color: #fff;
-  border: 3px solid #000;
-  box-shadow: 0 4px 25px rgba(0, 0, 0, 0.15);
   border-radius: 8px;
+}
+
+.sudoku-grid.completed {
+  animation: fadeOut 1s ease-out, confetti 2s ease-in;
 }
 
 .sudoku-cell {
@@ -80,4 +91,35 @@
 .sudoku-cell.incorrect {
   background-color: #ffcccc; /* Red background for incorrect cells */
   color: #a00; /* Dark red text */
+}
+
+button {
+  padding: 10px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #45a049;
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes confetti {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-100vh);
+  }
 }
