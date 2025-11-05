@@ -125,16 +125,3 @@ class SudokuGenerator:
         """Checks if numbers contain unique non-zero values."""
         nums = [num for num in numbers if num != 0]
         return len(nums) == len(set(nums))
-
-# Example usage
-if __name__ == "__main__":
-    generator = SudokuGenerator()
-    puzzle, solution = generator.generate_sudoku()
-    print("Puzzle:")
-    for row in puzzle:
-        print(row)
-    print("\nSolution:")
-    for row in solution:
-        print(row)
-
-    print("\nValidation:", generator.validate_sudoku(puzzle, solution))

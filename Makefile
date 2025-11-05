@@ -3,7 +3,7 @@
 .PHONY: install-backend install-frontend start-backend start-frontend
 
 install-backend:
-	cd backend && pip install -r requirements.txt
+	cd backend && uv sync
 
 install-frontend:
 	cd frontend && npm install
