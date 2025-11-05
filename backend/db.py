@@ -1,9 +1,7 @@
 from sqlalchemy import Column, Integer, String, ForeignKey
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.orm import relationship, sessionmaker, declarative_base
-from contextlib import asynccontextmanager
 
-import asyncio
 
 # Initialize SQLite database
 DATABASE_URL = "sqlite+aiosqlite:///sudoku.db"

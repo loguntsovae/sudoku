@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from routers import puzzles_router, games_router, websocket_game_endpoint, auth
 from services.puzzle_generator import ensure_minimum_puzzles
 from db import create_tables
+from fastapi_pagination import add_pagination
 
 
 app = FastAPI(
@@ -33,6 +34,9 @@ app.add_middleware(
 app.include_router(puzzles_router, prefix="", tags=["Puzzles"])
 app.include_router(games_router, prefix="", tags=["Games"])
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
+
+# Initialize pagination
+add_pagination(app)
 
 # WebSocket endpoint
 app.add_api_websocket_route("/ws/games/{game_id}", websocket_game_endpoint)

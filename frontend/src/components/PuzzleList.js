@@ -4,11 +4,13 @@ import './PuzzleList.css';
 
 function PuzzleList() {
   const [puzzles, setPuzzles] = useState([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Fetch puzzles from the backend
-    fetch('http://localhost:8004/puzzles')
+    // Fetch puzzles from the backend with pagination
+    fetch(`http://localhost:8004/puzzles?page=${page}`)
       .then((response) => {
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -16,14 +18,15 @@ function PuzzleList() {
         return response.json();
       })
       .then((data) => {
-        if (Array.isArray(data)) {
-          setPuzzles(data);
+        if (data.items && Array.isArray(data.items)) {
+          setPuzzles(data.items);
+          setTotalPages(data.pages);
         } else {
           console.error('Unexpected response format:', data);
         }
       })
       .catch((error) => console.error('Error fetching puzzles:', error));
-  }, []);
+  }, [page]);
 
   const handlePuzzleClick = async (id) => {
     try {
@@ -49,6 +52,18 @@ function PuzzleList() {
     }
   };
 
+  const handleNextPage = () => {
+    if (page < totalPages) {
+      setPage(page + 1);
+    }
+  };
+
+  const handlePreviousPage = () => {
+    if (page > 1) {
+      setPage(page - 1);
+    }
+  };
+
   return (
     <div className="puzzle-list">
       <h2>Available Puzzles</h2>
@@ -59,6 +74,17 @@ function PuzzleList() {
           </li>
         ))}
       </ul>
+      <div className="pagination-controls">
+        <button onClick={handlePreviousPage} disabled={page === 1}>
+          Previous
+        </button>
+        <span>
+          Page {page} of {totalPages}
+        </span>
+        <button onClick={handleNextPage} disabled={page === totalPages}>
+          Next
+        </button>
+      </div>
     </div>
   );
 }

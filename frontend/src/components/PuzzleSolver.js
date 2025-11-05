@@ -1,121 +1,116 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import './SudokuGrid.css';
+import './PuzzleSolver.css';
 
 function PuzzleSolver() {
-  const { gameId } = useParams(); // Updated to use gameId from URL
+  const { gameId } = useParams();
   const [puzzle, setPuzzle] = useState(null);
   const [socket, setSocket] = useState(null);
-  const [notification, setNotification] = useState(''); // State for notifications
-  const [autoSolver, setAutoSolver] = useState(false); // State for auto-solver
+  const [notification, setNotification] = useState('');
+  const [autoSolver, setAutoSolver] = useState(false);
 
   useEffect(() => {
     let ws;
-
     fetch(`http://localhost:8004/games/${gameId}`)
-      .then((response) => response.json())
+      .then((res) => res.json())
       .then((data) => {
         setPuzzle(data);
         ws = new WebSocket(`ws://localhost:8004/ws/games/${gameId}`);
         setSocket(ws);
-
         ws.onmessage = (event) => {
           try {
             const message = JSON.parse(event.data);
             if (message.message === 'all is done') {
-              setNotification('Puzzle is complete!');
+              setNotification('🎉 Puzzle completed!');
             } else if (message.message === 'Incorrect value') {
-              setNotification('Warning: Incorrect value entered!');
-              setPuzzle((prevPuzzle) => {
-                const updated = prevPuzzle.current_state.split('');
+              setNotification('⚠️ Incorrect value!');
+              setPuzzle((prev) => {
+                const updated = prev.current_state.split('');
                 updated[message.index] = 'X';
-                return { ...prevPuzzle, current_state: updated.join('') };
+                return { ...prev, current_state: updated.join('') };
               });
             } else if (message.index !== undefined && message.value !== undefined) {
-              setPuzzle((prevPuzzle) => {
-                const updatedState = prevPuzzle.current_state.split('');
-                updatedState[message.index] = message.value;
-                return { ...prevPuzzle, current_state: updatedState.join('') };
+              setPuzzle((prev) => {
+                const updated = prev.current_state.split('');
+                updated[message.index] = message.value;
+                return { ...prev, current_state: updated.join('') };
               });
             }
-          } catch (error) {
-            console.error('Error parsing WebSocket message:', error);
+          } catch (err) {
+            console.error('WebSocket message error:', err);
           }
         };
       })
-      .catch((error) => console.error('Error:', error));
-
-    return () => {
-      if (ws) ws.close();
-    };
+      .catch((err) => console.error('Fetch error:', err));
+    return () => ws && ws.close();
   }, [gameId]);
 
   useEffect(() => {
-    if (autoSolver && socket && socket.readyState === WebSocket.OPEN) {
-      socket.send(JSON.stringify({ autoSolver: "ON" }));
-    } else if (!autoSolver && socket && socket.readyState === WebSocket.OPEN) {
-      socket.send(JSON.stringify({ autoSolver: "OFF" }));
-    }
+    if (!socket || socket.readyState !== WebSocket.OPEN) return;
+    socket.send(JSON.stringify({ autoSolver: autoSolver ? 'ON' : 'OFF' }));
   }, [autoSolver, socket]);
 
   const handleInputChange = (index, value) => {
     if (!value.match(/^[1-9]?$/)) {
-      setNotification('Invalid input! Please enter a number between 1 and 9.');
+      setNotification('Enter 1–9 only');
       return;
     }
-
-    setPuzzle((prevPuzzle) => {
-      const updatedState = prevPuzzle.current_state.split('');
-      updatedState[index] = value || '0'; // Reset to initial state if empty
-      return { ...prevPuzzle, current_state: updatedState.join('') };
+    setPuzzle((prev) => {
+      const updated = prev.current_state.split('');
+      updated[index] = value || '0';
+      return { ...prev, current_state: updated.join('') };
     });
-
-    if (socket) {
-      socket.send(JSON.stringify({ index, value }));
-    }
+    socket?.send(JSON.stringify({ index, value }));
   };
 
-  const toggleAutoSolver = () => {
-    setAutoSolver((prev) => !prev);
-  };
-
-  if (!puzzle || !puzzle.current_state || !puzzle.solution) {
-    return <div>Loading...</div>;
-  }
+  if (!puzzle) return <div className="loading">Loading...</div>;
 
   return (
-    <div>
-      <h2>{puzzle.puzzle_name}</h2>
-      {notification && <div className="notification">{notification}</div>} {/* Display notification */}
-      <div>
-        <label>
-          <input
-            type="checkbox"
-            checked={autoSolver}
-            onChange={toggleAutoSolver}
-          />
-          Auto-Solver
-        </label>
+    <div className="puzzle-container">
+      <div className="main-panel">
+        <h2 className="puzzle-title">{puzzle.puzzle_name}</h2>
+        {notification && <div className="notification">{notification}</div>}
+        <div className="sudoku-grid">
+          {puzzle.current_state.split('').map((cell, i) => (
+            <div
+              key={i}
+              className={`sudoku-cell ${cell !== '0' ? 'pre-filled' : ''}`}
+              style={{ gridRow: Math.floor(i / 9) + 1, gridColumn: (i % 9) + 1 }}
+            >
+              {cell !== '0' ? (
+                cell
+              ) : (
+                <input
+                  type="text"
+                  maxLength="1"
+                  className="sudoku-input"
+                  onChange={(e) => handleInputChange(i, e.target.value)}
+                />
+              )}
+            </div>
+          ))}
+        </div>
       </div>
-      <div className="sudoku-grid">
-        {puzzle.current_state.split('').map((cell, index) => (
-          <div
-            key={index}
-            className={`sudoku-cell ${cell !== '0' ? 'pre-filled' : ''}`}
-            style={{ gridRow: Math.floor(index / 9) + 1, gridColumn: (index % 9) + 1 }}
+
+      <div className="side-panel">
+        <div className="side-box">
+          <h3>Controls</h3>
+          <label className="checkbox-label">
+            <input
+              type="checkbox"
+              checked={autoSolver}
+              onChange={() => setAutoSolver((p) => !p)}
+            />
+            Auto Solver
+          </label>
+          <button
+            className="reset-btn"
+            onClick={() => window.location.reload()}
           >
-            {cell !== '0' ? (
-              cell
-            ) : (
-              <input
-                type="text"
-                maxLength="1"
-                className="sudoku-input"
-                onChange={(e) => handleInputChange(index, e.target.value)}
-              />
-            )}
-          </div>
-        ))}
+            🔁 Reset Game
+          </button>
+        </div>
       </div>
     </div>
   );

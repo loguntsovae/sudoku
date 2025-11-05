@@ -7,6 +7,7 @@ import MainLayout from './components/MainLayout';
 import Footer from './components/Footer';
 import Login from './components/Login';
 import Register from './components/Register';
+import Home from './components/Home';
 import './App.css';
 
 function App() {
@@ -15,9 +16,10 @@ function App() {
       <div className="App">
         <Header />
         <Routes>
-          <Route path="/" element={<MainLayout />} />
+          <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/puzzles" element={<PuzzleList />} />
           <Route path="/solve/:gameId" element={<PuzzleSolver />} />
         </Routes>
         <Footer />

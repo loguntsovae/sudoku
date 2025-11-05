@@ -1,6 +1,8 @@
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 from db import Game, Puzzle
+from sqlalchemy.orm import selectinload
 from schemas.game import NewGameRequest
 from schemas.response import GameResponse, GameListResponse
 from dependencies import get_db
@@ -8,12 +10,15 @@ import uuid
 
 router = APIRouter()
 
+
 @router.get("/games/{game_id}", response_model=GameResponse)
 async def get_game(game_id: str, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(
-        Game.__table__.select().where(Game.id == game_id).join(Puzzle)
+    query = (
+        select(Game)
+        .options(selectinload(Game.puzzle))
+        .where(Game.id == game_id)
     )
-    game = result.scalar()
+    game = (await db.execute(query)).scalar_one_or_none()
 
     if game is None:
         raise HTTPException(status_code=404, detail="Game not found")
@@ -27,10 +32,9 @@ async def get_game(game_id: str, db: AsyncSession = Depends(get_db)):
 
 @router.post("/games", status_code=201)
 async def create_game(request: NewGameRequest, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(
-        Puzzle.__table__.select().where(Puzzle.id == request.puzzle_id)
-    )
-    puzzle = result.scalar()
+    query = select(Puzzle).where(Puzzle.id == request.puzzle_id)
+    puzzle = (await db.execute(query)).scalar_one_or_none()
+
     if puzzle is None:
         raise HTTPException(status_code=404, detail="Puzzle not found")
 
@@ -49,10 +53,8 @@ async def create_game(request: NewGameRequest, db: AsyncSession = Depends(get_db
 
 @router.get("/games", response_model=list[GameListResponse])
 async def list_games(db: AsyncSession = Depends(get_db)):
-    result = await db.execute(
-        Game.__table__.select().join(Puzzle)
-    )
-    games = result.scalars().all()
+    query = select(Game).join(Game.puzzle)
+    games = (await db.execute(query)).scalars().all()
 
     return [
         GameListResponse(

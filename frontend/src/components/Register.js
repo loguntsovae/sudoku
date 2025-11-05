@@ -7,16 +7,33 @@ const Register = () => {
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    const response = await fetch('http://localhost:8004/auth/register', {
+    const registerResponse = await fetch('http://localhost:8004/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password }),
     });
-    const data = await response.json();
-    if (response.ok) {
+    const registerData = await registerResponse.json();
+
+    if (registerResponse.ok) {
       alert('Registration successful!');
+
+      // Automatically log in the user after successful registration
+      const loginResponse = await fetch('http://localhost:8004/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+      const loginData = await loginResponse.json();
+
+      if (loginResponse.ok) {
+        alert('Login successful! Token: ' + loginData.access_token);
+        // Store the token in localStorage or state management
+        localStorage.setItem('token', loginData.access_token);
+      } else {
+        alert('Login failed: ' + loginData.detail);
+      }
     } else {
-      alert('Registration failed: ' + data.detail);
+      alert('Registration failed: ' + registerData.detail);
     }
   };
 

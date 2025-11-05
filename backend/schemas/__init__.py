@@ -1,6 +1,7 @@
 from .game import NewGameRequest
 from .response import GameResponse, GameListResponse
 from .user import UserCreate, Token
+from .puzzle import PuzzleOut
 
 __all__ = [
     "NewGameRequest",
@@ -8,4 +9,5 @@ __all__ = [
     "GameListResponse",
     "UserCreate",
     "Token",
+    "PuzzleOut",
 ]
