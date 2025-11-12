@@ -39,14 +39,14 @@
   background-color: #eaf3ff;
 }
 
-/* Предзаполненные числа — серые, без курсора */
 .pre-filled {
+  /* Pre-filled numbers — gray and not editable */
   color: #333; /* Darker gray for text */
   background-color: #dcdcdc; /* Darker gray for background */
   cursor: default;
 }
 
-/* Толстые линии между блоками 3×3 */
+/* Thick lines between 3×3 blocks */
 .sudoku-cell:nth-child(3n) {
   border-right: 2px solid #000;
 }
@@ -59,13 +59,14 @@
   border-bottom: 2px solid #000;
 }
 
-/* Чёткое выделение текущей ячейки */
+
+/* Clear highlight for the currently focused cell */
 .sudoku-cell:focus {
   outline: none;
   background-color: #cfe3ff;
 }
 
-/* Лёгкое чередование оттенков блоков для визуального удобства */
+/* Subtle alternating shades for blocks to improve readability */
 .sudoku-cell:nth-child(odd):nth-child(-n + 9),
 .sudoku-cell:nth-child(n + 28):nth-child(-n + 36),
 .sudoku-cell:nth-child(n + 55):nth-child(-n + 63),

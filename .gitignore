@@ -1,3 +1,43 @@
+### Node / Frontend
+node_modules/
+frontend/node_modules/
+frontend/build/
+
+### Python
+*.pyc
+__pycache__/
+venv/
+.venv/
+backend/.venv/
+env/
+ENV/
+
+### Distribution / packaging
+dist/
+build/
+*.egg-info/
+pip-wheel-metadata/
+
+### IDEs and editors
+.vscode/
+*.swp
+*.swo
+.idea/
+
+### macOS
+.DS_Store
+
+### Logs
+*.log
+
+### Misc
+.env
+.env.local
+.cache/
+/.pytest_cache/
+
+### Ignore generated frontend build artifacts in the frontend/build/ dir
+frontend/build/
 # Node.js
 node_modules/
 
