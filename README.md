@@ -1,58 +1,47 @@
 # Sudoku App
 
-## Overview
-This is a Sudoku application with a React frontend and FastAPI backend. Users can select puzzles, solve them, and interact with the backend in real-time using WebSockets. The app also features an auto-solver for users who want assistance in completing puzzles.
+![Python](https://img.shields.io/badge/FastAPI-backend-009688.svg)
+![React](https://img.shields.io/badge/React-frontend-61dafb.svg)
+![WebSocket](https://img.shields.io/badge/WebSocket-live%20updates-blue.svg)
 
-## Features
-- Display a list of Sudoku puzzles.
-- Create and solve Sudoku games.
-- Real-time updates using WebSockets.
-- Auto-solver feature to automatically solve puzzles step-by-step.
+**Full-stack Sudoku: React + FastAPI + WebSockets.** Pick a puzzle, solve it live, or flip on the auto-solver and watch it fill the board step by step over a WebSocket stream.
 
-## Installation
+![Game board](docs/img/game.png)
 
-### Backend
-1. Navigate to the `backend` directory:
-   ```bash
-   cd backend
-   ```
-2. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-3. Start the backend server:
-   ```bash
-   uvicorn main:app --reload --port 8004
-   ```
+## How it works
 
-### Frontend
-1. Navigate to the `frontend` directory:
-   ```bash
-   cd frontend
-   ```
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Start the frontend development server:
-   ```bash
-   npm start
-   ```
+```mermaid
+flowchart LR
+    F[React frontend :3000] -->|REST: puzzles, games| B[FastAPI :8004]
+    F <-->|WebSocket /solve<br/>cell updates + auto-solver steps| B
+    B --> G[sudoku_generator.py<br/>puzzle generation + solver]
+```
 
-## Usage
-1. Open the frontend in your browser at `http://localhost:3000`.
-2. Select a puzzle and start solving.
-3. Enable the auto-solver if you want the app to assist you in solving the puzzle.
+- **Backend** owns the game state; every move is validated server-side
+- **Auto-solver** streams its steps over the WebSocket — the board animates as it solves
+- Puzzle names are random words from `random-word` (yes, "cyanophyceous" is a real puzzle)
 
-## Development
-### Backend
-- Python 3.9+
-- FastAPI
-- SQLite
+## Run it
 
-### Frontend
-- React
-- WebSockets
+```bash
+# backend
+cd backend && uv venv && uv pip install fastapi "uvicorn[standard]" pydantic random-word
+uvicorn main:app --port 8004
+
+# frontend
+cd frontend && npm install && npm start   # opens :3000
+```
+
+## Structure
+
+```
+backend/
+  main.py               # FastAPI: REST + WebSocket endpoints
+  sudoku_generator.py   # board generation and solving
+frontend/src/
+  components/           # PuzzleList, GameList, PuzzleSolver
+```
 
 ## License
+
 MIT
